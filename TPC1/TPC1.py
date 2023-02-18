@@ -1,6 +1,6 @@
 import math
-import pprint
-
+import matplotlib.pyplot as plt
+import sys
 
 def ler_ficheiro():
     with open("myheart.csv") as file:
@@ -39,50 +39,104 @@ def doenca_sexo(linhas):
 
 
 def doenca_escaloes(linhas):
-    res = dict()
+    res_ints = dict()                                           # dicionario do tipo 0->31,1->35,etc...
 
     for l in linhas:
         info = l.split(",")
         idade = int(info[0])
-        escalao_tipo = math.floor((idade-30)/4)                 # 30 -> 0, 34 -> 1, 38 -> 2, etc
-        escalao = f"[{30 + 4 * escalao_tipo},{(30 + 4 * escalao_tipo) + 4}]"
-        if escalao in res:
-            res[escalao]+=1
+        escalao_tipo = math.floor((idade-30)/4)                 # idade 30 -> escalao 0, 34 -> 1, 38 -> 2, etc...
+        if escalao_tipo in res_ints:
+            res_ints[escalao_tipo] +=1
         else:
-            res[escalao] = 1
+            res_ints[escalao_tipo] = 1
+    # sorting
+    keys_sorted = sorted(res_ints.keys())
+    values_sorted = [res_ints[key] for key in keys_sorted]
+    res = { f"[{30 + 4 * keys_sorted[i]},{(30 + 4 * keys_sorted[i]) + 4}]" : values_sorted[i] for i in range(len(keys_sorted))}
 
     return res
 
-def doenca_colestrol(linhas): # escalao minimo [110-120]
-    res = dict()
+
+def doenca_colestrol(linhas): # escalao minimo [100-110]
+    res_ints = dict()
+    res_ints[-1] = 0            # -1 significa que tem nao tem colestrol(0). O minimo é 107 nos dados logo qualquer
+                                # valor abaixo conta como 0
     for l in linhas:
         info = l.split(",")
         colestrol = int(info[3])
-        if colestrol is not 0:
-            colestrol_esc = math.floor((colestrol-110)/10)                  # 110 a 120 -> 0, 120 a 130 -> 1
-            colestrol_esc = f"[{110 + colestrol_esc * 10},{110 +(colestrol_esc * 10) + 10}]"
-            if colestrol_esc in res:
-                res[colestrol_esc] +=1
+        if colestrol == 0:
+            res_ints[-1] += 1
+        else:
+            colestrol = math.floor((colestrol - 100)/10)
+            if colestrol in res_ints:
+                res_ints[colestrol] +=1
             else:
-                res[colestrol_esc] = 1
+                res_ints[colestrol] = 1
+    #sorting
+    keys_sorted = sorted(res_ints.keys())
+    values_sorted = [res_ints[key] for key in keys_sorted]
+    res = dict()
+    res["0 ou <100"] = values_sorted[0]
+    for i in range(1,len(keys_sorted)):
+        res[f"[{100 + 10 * keys_sorted[i]},{(100 + 10 * keys_sorted[i]) + 10}]"] = values_sorted[i]
+
     return res
 
-#headers -> tupulo(parametro,quantidade)
-def to_table(headers,dicionario):
-    str_res =      f"{headers[0]}      {headers[1]}\n"
+#headers -> triplo(parametro,quantidade,%)
+def to_table(headers,dicionario, total):
+    str_res =      f" {headers[0]:<5} || {headers[1]:<7} || {headers[2]:<4}\n---------------------------\n"
     for para,n in dicionario.items():
-        str_res += f"{para}    |  {n}\n"
+        perc = round( (n/total * 100), 2)
+        str_res += f" {para:<5} || {n:<7}    || {perc:<4} \n"
     print(str_res)
+    return
 
+def to_plot(dicionario,legendaX,legendaY,titulo):
+    n = dicionario.values()
+    parametro = dicionario.keys()
+    fig = plt.figure(figsize= (10,5))
+    plt.bar(parametro,n, color='blue', width = 0.3)
+    plt.xticks(range(len(dicionario)), dicionario.keys(), rotation='vertical')
+    plt.ylabel(legendaY)
+    plt.title(titulo)
+    plt.show()
+    return
 
+def print_menu():
+    print("Digite a opcao:\n"
+         "1->Tabela Distribuição Sexo\n"
+         "2->Tabela Distribuição Faixa Etaria\n"
+         "3->Tabela Distribuição Colestrol\n"
+         "4->Plot Distribuição Sexo\n"
+         "5->Plot Distribuição Faixa Etaria\n"
+         "6->Plot Distribuição Colestrol\n"
+         "0->Sair\n")
 
 if __name__ == "__main__":
-    vals = filtro(ler_ficheiro())
-    resultado_dist1 = doenca_sexo(vals)
-    resultado_dist2 = doenca_escaloes(vals)
-    resultado_dist3 = doenca_colestrol(vals)
+    vals = filtro(ler_ficheiro()) # ler o ficheior e filtrar quem não está doente para as distribuicoes
+    n_doentes = len(vals)
+    resultado_dist1 = doenca_sexo(vals)        #dicionario
+    resultado_dist2 = doenca_escaloes(vals)    #dicionario
+    resultado_dist3 = doenca_colestrol(vals)   #dicionario
 
-    to_table( ("Sexo","Nº"), resultado_dist1 )
-    to_table( ("Escalao","Nº"), resultado_dist2 )
-    to_table( ("Colestrol","Nº"), resultado_dist3 )
+    print_menu()
+    for opcao in sys.stdin:
+        opcao = int(opcao)
+        if opcao == 1:
+            to_table(("Sexo", "Nº Doentes", "%"), resultado_dist1, n_doentes)
+            print_menu()
+        elif opcao == 2:
+            to_table(("Escalao", "Nº Doentes", "%"), resultado_dist2, n_doentes)
+            print_menu()
+        elif opcao == 3:
+            to_table(("Colestrol", "Nº Doentes", "%"), resultado_dist3, n_doentes)
+            print_menu()
+        elif opcao == 4:
+            to_plot(resultado_dist1, "Sexo", "Nº Doentes", "Distribuição por sexo")
+        elif opcao == 5:
+            to_plot(resultado_dist2,"Idade","Nº Doentes","Distribuição por faixas etárias")
+        elif opcao == 6:
+            to_plot(resultado_dist3, "Colestrol", "Nº Doentes", "Distribuição por nível colestrol")
+        else:
+            break
 
