@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
             if "=" in line:
                 print(f"Resultado: {total}")
-                sum_digits = 0
+                total = 0
 
 
 
