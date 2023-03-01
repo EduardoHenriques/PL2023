@@ -1,4 +1,5 @@
-
+import re
+import pprint
 #abc… 	Letters
 #	123… 	Digits
 #	\d 	Any Digit
@@ -24,5 +25,22 @@
 #	(.*) 	Capture all
 #	(abc|def) 	Matches abc or def
 #Dentro dos [] os caracteres especiais perdem o efeito
+
+def datas(txt):
+	regexDatas = re.compile(r'([0-9]+)-[0-9]+-[0-9]')  # ::ANO-MES-DIA::
+	res = dict()
+	matches = re.findall(regexDatas,txt)
+	for match in matches:
+		if match in res.keys():
+			res[match] += 1
+		else:
+			res[match] = 1
+	return res
+
+
 if __name__ == "__main__":
-	print()
+	pp = pprint.PrettyPrinter(indent=4)
+	with open("processos.txt") as file:
+		text = file.read()
+	dict_datas = datas(text)
+	pp.pprint(dict_datas)
