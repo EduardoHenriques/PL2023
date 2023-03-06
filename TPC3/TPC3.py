@@ -1,3 +1,4 @@
+import json
 import re
 import pprint
 import math
@@ -42,7 +43,7 @@ def datas(txt):
 				res[match] += 1
 			else:
 				res[match] = 1
-		return res
+	return res
 
 
 def list_to_dict(list):
@@ -106,7 +107,7 @@ def familiares(text):
 	for line in text:
 		familiares = re.findall(regFamiliares,line)
 		for elem in familiares:
-			if elem not in blacklist:
+			if elem not in blacklist and not elem.startswith("Sao") and not elem.startswith("Sant"):
 				if elem in dict_idades.keys():
 					dict_idades[elem] += 1
 				else:
@@ -117,6 +118,30 @@ def familiares(text):
 
 
 def toJSON(text):
+	regexJSON = re.compile(r'(\d+)::(\d+)-(\d+)-(\d+)::([a-zA-Z ]+)::([a-zA-Z ]+)::([a-zA-Z ]+)::(.*)::+')
+	for line in text:
+		match = re.search(regexJSON,line)
+		if match != None:
+			dictJSON = dict()
+			dictJSON["pid"] = match.groups()[0]
+			dictJSON["year"] = match.groups()[1]
+			dictJSON["month"] = match.groups()[2]
+			dictJSON["day"] = match.groups()[3]
+			dictJSON["name"] = match.groups()[4]
+			dictJSON["father"] = match.groups()[5]
+			dictJSON["mother"] = match.groups()[6]
+			dictJSON["other"] = match.groups()[7]
+			print(json.dumps(dictJSON))
+	return
+
+def print_menu():
+    print("Digite a opcao:\n"
+         "1->Datas\n"
+         "2->Distribuicao de Nomes proprios por seculo + nomes/apelidos mais comuns\n"
+         "3->Distribuicao de Apelidos por seculo + nomes/apelidos mais comuns\n"
+         "4->Distribuicao Familiares\n"
+         "5->ToJSON\n"
+         "0->Sair\n")
 
 
 
@@ -124,25 +149,39 @@ if __name__ == "__main__":
 	pp = pprint.PrettyPrinter(indent=4)
 	with open("processos.txt") as file:
 		text = file.readlines()
-
+		resNomes = nomes(text)
+		print_menu()
 		for opcao in sys.stdin:
 			opcao = int(opcao)
 			if opcao == 1:
 				pp.pprint(datas(text))
+				print_menu()
 			if opcao == 2:
-				resNomes = nomes(text)
 				for key in resNomes[0]:
 					print(f"NOMES PROPRIOS {key}")
-					pp.pprint(resNomes[0][key])
+					print(f"{resNomes[0][key]}||")
 
-				for key in resNomes[1]:
-					print(f"APELIDOS {key}")
-					pp.pprint(resNomes[1][key])
+				#for key in resNomes[1]:
+				#	print(f"APELIDOS {key}")
+				#	pp.pprint(resNomes[1][key])
 
 				print(f"NOMES PROPRIOS MAIS COMUNS:{resNomes[2]}")
 				print(F"APELIDOS MAIS COMUNS:{resNomes[3]}")
+				print_menu()
 			if opcao == 3:
-				pp.pprint((familiares(text)))
+				for key in resNomes[1]:
+					print(f"APELIDOS {key}")
+					print(f"{resNomes[1][key]}||")
+
+				print(f"NOMES PROPRIOS MAIS COMUNS:{resNomes[2]}")
+				print(F"APELIDOS MAIS COMUNS:{resNomes[3]}")
+				print_menu()
 			if opcao == 4:
+				pp.pprint((familiares(text)))
+				print_menu()
+			if opcao == 5:
 				toJSON(text[0:20])
+				print_menu()
+			if opcao == 0:
+				break
 
