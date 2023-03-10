@@ -1,5 +1,6 @@
-nome,idade,legal,email
-José,10,Nao,jose@gmail.com
-Eduardo,21,Sim,diu@gmail.com
-João,17,Nao,joao05@alunos.uminho.pt
-André,30,Sim,andre23@hotmail.com
+nome,idade,legal,email,notas{1,6},,,,,,
+José,10,Nao,jose@gmail.com,1,2,3,4,5,6,
+Eduardo,21,Sim,diu@gmail.com,1,1,1,1,1,1,
+João,17,Nao,joao05@alunos.uminho.pt,6,6,6,6,6,6,
+André,30,Sim,andre23@hotmail.com,100,,,,,,
+
