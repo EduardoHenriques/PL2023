@@ -89,8 +89,6 @@ def parse_numeros(num):
 
 if __name__ == "__main__":
 
-	blacklist = ['601', '641']
-
 	tokens = [
 		'moedas',
 		'digito',
