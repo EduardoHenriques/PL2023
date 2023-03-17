@@ -9,13 +9,16 @@ import subprocess
 
 def dictToLine(dic, lastLineFlag):
 	if len(dic) > 1:
-		res = json.dumps(dic) + ',\n' if not lastLineFlag else json.dumps(dic) + '\n'
-		res = re.sub(r', ', r',\n\t', res)
-		res = re.sub(r']}\n', r']\n\t}', res)
-		res = re.sub(r']},\n', r']\n\t},\n', res)
-		res = re.sub(r': \[', r':\n\t[', res)
+		if lastLineFlag:
+			res = json.dumps(dic, indent=2)
+			res += '\n'
+			print(res)
+		else:
+			res = json.dumps(dic, indent=2) + ',\n'
+			print(res)
 		return res
 	else:
+		print("nada")
 		return "\n"
 
 
@@ -49,7 +52,7 @@ def toJson(text, file_name):
 
 	# encher uma copia do dicionario por linha
 	file.write('[\n')
-	for i in range(1, len(text)):	 # parse a uma linha
+	for i in range(1, len(text)-1):	 # parse a uma linha(excepto a ultima, que apenas contem \n)
 		matches = re.findall(splitLine, text[i])
 		for j in range(len(paramList)):	 	# passa por cada parametro
 			if re.match(isList, paramList[j]):	 	# parametro é do tipo str{n,m} ?
@@ -58,10 +61,11 @@ def toJson(text, file_name):
 				matches = decode(transform_list(matches, j+int(n)-1, j+int(m)-1))
 
 		dictLine = dict(zip(paramList, matches))  	# funcao que transforma um dicionario numa string formato JSON
-		if i == len(text)-2:
-			l = '\t' + dictToLine(dictLine, True)
+		print(dictLine)
+		if i == len(text)-2:  # ultima linha com valores csv, nao tem virgula no fim
+			l = dictToLine(dictLine, True)
 		else:
-			l = '\t' + dictToLine(dictLine, False)
+			l = dictToLine(dictLine, False)
 		file.write(l)
 	file.write(']\n')
 	file.close()
