@@ -2,6 +2,14 @@ import ply.lex as lex
 import sys
 import re
 
+list_coinC = ['5', '10', '20', '50']
+list_coinE = ['1', '2']
+
+
+filterMoedas = re.compile(r'(\d{1,2})([ce])')  # ESTA A FUNCIONAR
+filterChamadaIN = re.compile(r'00([0-9]{2,3})([0-9]{9})')  # 00[CODIGO][NUMERO-9dig]
+filterChamada = re.compile(r'([0-9]{3})([0-9]{6})')  # [NUMERO-3dig][NUMERO-6dig]
+
 
 def t_error(t):
 	print("Caracter illegal: ", t)
@@ -11,9 +19,6 @@ def t_error(t):
 def parse_moedas(l):
 	cent = 0
 	eur = 0
-	list_coinC = ['5', '10', '20', '50']
-	list_coinE = ['1', '2']
-	filterMoedas = re.compile(r'(\d{1,2})([ce])')
 
 	res = filterMoedas.findall(l)
 	for coin in res:
@@ -38,9 +43,48 @@ def parse_moedas(l):
 	return [eur, cent]
 
 
-	#  WIP
+def calcular_saldo(curr, cost):
+	total_c = 100 * cost  # transformar  custo em centimos
+	total_d = 100 * curr[0] + curr[1]  # transformar saldo  em centimos
+
+	total_d = total_d - total_c  # fazer a conta
+	if total_d < 0:
+		print("Chamada nao foi executada, nao tem saldo suficiente. Por favor introduza mais moedas...")
+		return dinheiro
+	else:
+		dinheiro[0] = int(total_d / 100)  # atribuir o novo valor ao saldo atual(euros)
+		dinheiro[1] = int(total_d % 100)  # atribuir o novo valor ao saldo atual(centimos
+		print("Chamada efecutada.")
+		return dinheiro
+
+
 def parse_numeros(num):
-	return
+	res = filterChamadaIN.search(num)
+	if res:
+		print(f"----CHAMADA INTERNACIONAL----\nCodigo: {res.group(1)}\nNumero: {res.group(2)}\nCusto: 1 euro e 50 centimos\n----")
+
+		return 1.5
+
+	res = filterChamada.search(num)
+	if res:
+		if res.group(1)[0] == '2':
+			print("----CHAMADA NACIONAL----\nCusto: 25 centimos\n----")
+			return 0.25
+		elif res.group(1) == '601' or res.group == '641':
+			print("----CHAMADA BLOQUADA----\nCusto: 0\nPor favor, marque outro numero\n----")
+			return -1
+		elif res.group(1) == '800':
+			print("----CHAMADA VERDE----\nCusto: 0\n----")
+			return 0
+		elif res.group(1) == '808':
+			print("----CHAMADA AZUL----\nCusto: 10 centimos\n----")
+			return 0.10
+		else:
+			print("Numero nao reconhecida.")
+			return -1
+	else:
+		print("Numero invalido")
+		return 0
 
 
 if __name__ == "__main__":
@@ -62,7 +106,7 @@ if __name__ == "__main__":
 	t_digito = r'[0-9]'
 	t_coin = r'(\ ' + t_digito + r'{1,2}[ce][,.])+'
 	t_moedas = r'MOEDA ' + t_coin
-	t_numero = r'T=' + t_digito + r'{3}' + t_digito + r'{6}' + t_newline
+	t_numero = r'T=\ (' + t_digito + r'+)' + t_newline
 	t_levantar = r'LEVANTAR' + t_newline
 	t_pousar = r'POUSAR' + t_newline
 
@@ -88,10 +132,17 @@ if __name__ == "__main__":
 					dinheiro[0] += saldoLine[0]
 					dinheiro[1] += saldoLine[1]
 					print(f"Tem {dinheiro[0]} euros e {dinheiro[1]} centimos de saldo.")
+				else:
+					print("MAQUINA DESLIGADA, OPERAÇÃO INVALIDA")
 
 			if token.type == 'numero':
-				#  parsing dos numeros por fazer
-				parse_numeros(token.value)
+				if ligada:
+					custo = parse_numeros(token.value)
+					if custo > 0:
+						dinheiro = calcular_saldo(dinheiro, custo)
+					print(f"Tem {dinheiro[0]} euros e {dinheiro[1]} centimos de saldo.")
+				else:
+					print("MAQUINA DESLIGADA, OPERAÇÃO INVÁLIDA")
 			if token.type == 'pousar':
 				if not ligada:
 					print("MAQUINA JA ESTAVA DESLIGADA OPERAÇÃO INVALIDA")
