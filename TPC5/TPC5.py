@@ -154,7 +154,7 @@ if __name__ == "__main__":
 			if token.type == 'numero':
 				if ligada:
 					custo = parse_numeros(token.value)
-					if custo > 0:
+					if custo >= 0:
 						dinheiro = calcular_saldo(dinheiro, custo)
 					print(f"Tem {dinheiro[0]} euros e {dinheiro[1]} centimos de saldo.")
 				else:
