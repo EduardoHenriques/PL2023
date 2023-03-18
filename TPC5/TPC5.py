@@ -2,8 +2,8 @@ import ply.lex as lex
 import sys
 import re
 
-list_coinC = ['5', '10', '20', '50']
-list_coinE = ['1', '2']
+list_coinC = ['50', '20', '10', '5']
+list_coinE = ['2', '1']
 
 
 filterMoedas = re.compile(r'(\d{1,2})([ce])')  # ESTA A FUNCIONAR
@@ -57,6 +57,25 @@ def calcular_saldo(curr, cost):
 		print("Chamada efecutada.")
 		return dinheiro
 
+def troco(resto):
+	restoE = resto[0]
+	restoC = resto[1]
+	res = 'O seu troco: '
+
+	for coin in list_coinE:
+		count = int(restoE / int(coin))
+		if count > 0:
+			restoE = restoE - count * int(coin)
+			res += (str(count) + ' x ' + coin + ' euro(s), ')
+
+	for coin in list_coinC:
+		count = int(restoC / int(coin))
+		if count > 0:
+			restoC = restoC - count * int(coin)
+			res += (str(count) + ' x ' + coin + ' centimos, ')
+
+	res = res[:-2] + '.'
+	return res
 
 def parse_numeros(num):
 	res = filterChamadaIN.search(num)
@@ -90,20 +109,19 @@ def parse_numeros(num):
 if __name__ == "__main__":
 
 	tokens = [
-		'moedas',
-		'digito',
-		'coin',
-		'depositar',
-		'numero',
-		'levantar',
-		'pousar',
-		'newline'
+		'moedas',	# sequencia de moedas seguidas de 'MOEDA '
+		'digito',	# 0-9
+		'coin',	# uma moeda
+		'numero',	# T= digitos
+		'levantar',	# LEVANTAR\n
+		'pousar',	# POUSAR\n
+		'newline'	#\n
 	]
 
 	t_newline = r'\n'
 	t_digito = r'[0-9]'
 	t_coin = r'(\ ' + t_digito + r'{1,2}[ce][,.])+'
-	t_moedas = r'MOEDA ' + t_coin
+	t_moedas = r'MOEDA ' + t_coin + t_newline
 	t_numero = r'T=\ (' + t_digito + r'+)' + t_newline
 	t_levantar = r'LEVANTAR' + t_newline
 	t_pousar = r'POUSAR' + t_newline
@@ -145,4 +163,5 @@ if __name__ == "__main__":
 				if not ligada:
 					print("MAQUINA JA ESTAVA DESLIGADA OPERAÇÃO INVALIDA")
 				else:
-					print(f"TROCO: {dinheiro[0]} euros e {dinheiro[1]} centimos. Volte sempre!")
+					print(troco(dinheiro)+"\nVolte sempre!")
+					exit()
