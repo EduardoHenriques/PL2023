@@ -12,7 +12,7 @@ filterChamada = re.compile(r'([0-9]{3})([0-9]{6})')  # [NUMERO-3dig][NUMERO-6dig
 
 
 def t_error(t):
-	print("Caracter illegal: ", t)
+	print("Caracter ilegal: ", t)
 	t.lexer.skip(1)
 
 
@@ -28,13 +28,13 @@ def parse_moedas(l):
 			if val in list_coinC:
 				cent += int(coin[0])
 			else:
-				print(f"moeda invalida:{coin}")
+				print(f"moeda inválida:{coin}")
 
 		if tipo == 'e':
 			if val in list_coinE:
 				eur += int(coin[0])
 			else:
-				print(f"moeda invalida:{coin}")
+				print(f"moeda inválida:{coin}")
 
 	if cent >= 100:
 		eur += int(cent / 100)
@@ -54,7 +54,7 @@ def calcular_saldo(curr, cost):
 	else:
 		dinheiro[0] = int(total_d / 100)  # atribuir o novo valor ao saldo atual(euros)
 		dinheiro[1] = int(total_d % 100)  # atribuir o novo valor ao saldo atual(centimos
-		print("Chamada efecutada.")
+		print("Chamada efetuada.")
 		return dinheiro
 
 
@@ -91,7 +91,7 @@ def parse_numeros(num):
 		if res.group(1)[0] == '2':
 			print("----CHAMADA NACIONAL----\nCusto: 25 centimos\n----")
 			return 0.25
-		elif res.group(1) == '601' or res.group == '641':
+		elif res.group(1) == '601' or res.group(1) == '641':
 			print("----CHAMADA BLOQUADA----\nCusto: 0\nPor favor, marque outro numero\n----")
 			return -1
 		elif res.group(1) == '800':
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 		for token in lexer:
 			if token.type == 'levantar':
 				if ligada:
-					print("MAQUINA JA ESTÁ LIGADA, OPERAÇÃO INVÁLIDA")
+					print("MÁQUINA JA ESTÁ LIGADA, OPERAÇÃO INVÁLIDA")
 				else:
 					ligada = True
 					print("MAQUINA LIGADA, DEPOSITE MOEDAS:")
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 					saldoLine = parse_moedas(token.value)
 					dinheiro[0] += saldoLine[0]
 					dinheiro[1] += saldoLine[1]
-					print(f"Tem {dinheiro[0]} euros e {dinheiro[1]} centimos de saldo.")
+					print(f"Tem {dinheiro[0]} euro(s) e {dinheiro[1]} centimos de saldo.")
 				else:
 					print("MAQUINA DESLIGADA, OPERAÇÃO INVALIDA")
 
