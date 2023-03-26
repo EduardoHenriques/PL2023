@@ -10,32 +10,28 @@ def t_error(t):
 
 if __name__ == "__main__":
 	tokens = [
-		'prog',
-		'declareFunc',
-		'callFunc',
-		'args',
-		'var',
-		'dig',
-		'num',
-		'newline',
-		'endline',
-		'space',
-		'singleComm',
-		'multCommOpen',
-		'multCommClose',
-		'multComm',
-		'word',
-		'if',
-		'assign',
-		'reassign',
-		'equals',
-		'declareInt', 'declareFloat', 'declareDouble',
-		'assignInt', 'assignDouble', 'assignFloat',
+		'prog', 'declareFunc', 'callFunc',
+
+		'args', 'var', 'dig', 'num',
+
+		'newline', 'endline', 'space',
+
+		'singleComm', 'multCommOpen', 'multCommClose', 'multComm',
+
+		'if', 'for', 'in', 'to', 'while',
+
+
+		'equals', 'bigger', 'smaller',
+		'plus',	'minus', 'times', 'div',
+
+		'declareInt', 'declareFloat', 'declareDouble',	# int x;
+		'assignInt', 'assignDouble', 'assignFloat',	 # int x = 10;
+		'assign', 'reassign',	# x = x + 1;
+
 		'openCurlyBracket', 'closeCurlyBracket',
 		'openBoxBracket', 'closeBoxBracket',
 		'openCurveBracket', 'closeCurveBracket',
-		'plus',	'minus', 'times', 'div',
-		'bigger', 'smaller',
+
 		'print'
 	]
 
@@ -63,10 +59,10 @@ if __name__ == "__main__":
 	t_closeCurveBracket = r'\)'
 	t_args = t_openCurveBracket + r'(\w+,?)+' + t_closeCurveBracket
 
-	t_openBoxBracket = r'\['
-	t_closeBoxBracket = r'\]'
+	t_openBoxBracket = r'\ *\[\ *'
+	t_closeBoxBracket = r'\ *\]\ *'
 
-	t_var = r'\ *[a-zA-Z]\w*\ *'
+	t_var = r'\ *[a-zA-Z]\w*\ *(' + t_openBoxBracket + r'(\ *[a-zA-Z]\w*\ *|' + t_num + r')' + t_closeBoxBracket + r')?'
 
 	t_declareInt = r'int\ *' + t_var + t_endline
 	t_declareDouble = r'double\ *' + t_var + t_endline
@@ -84,6 +80,11 @@ if __name__ == "__main__":
 	t_print = r'print\ *' + t_openCurveBracket + r'((' + t_callFunc + r',?)+|(' + t_var + r',?)+)+' + t_closeCurveBracket + t_endline
 
 	t_ignore = r' \n\t'
+	t_in = r'\ *in\ *'
+	t_to = r'\ *\.\.\ *'
+	t_for = r'for\ *' + t_var + t_in + t_openBoxBracket + t_num + t_to + t_num + t_closeBoxBracket
+	t_while = r'while\ *' + t_var + r'[' + t_bigger + t_smaller + t_equals + r']' + r'(' + t_var + r'|' + t_num + r')'
+	t_if = r'if\ *' + t_var + r'[' + t_bigger + t_smaller + t_equals + r']' + r'(' + t_var + r'|' + t_num + r')'
 
 	lexer = lex.lex()
 
