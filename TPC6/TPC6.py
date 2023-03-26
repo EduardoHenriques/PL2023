@@ -4,19 +4,21 @@ import re
 
 
 def t_error(t):
-	print("Caracter ilegal: ", t)
+	# print("Caracter ilegal: ", t)
 	t.lexer.skip(1)
 
 
 if __name__ == "__main__":
 	tokens = [
-		'openCurlyBracket',
-		'closeCurlyBracket',
 		'prog',
-		'func',
+		'declareFunc',
+		'callFunc',
+		'args',
 		'var',
-		'list',
+		'dig',
+		'num',
 		'newline',
+		'endline',
 		'space',
 		'singleComm',
 		'multCommOpen',
@@ -25,49 +27,79 @@ if __name__ == "__main__":
 		'word',
 		'if',
 		'assign',
-		'declare',
-		'openBoxBracket',
-		'closeBoxBracket',
-		'openCurveBracket',
-		'closeCurveBracket'
+		'reassign',
+		'equals',
+		'declareInt', 'declareFloat', 'declareDouble',
+		'assignInt', 'assignDouble', 'assignFloat',
+		'openCurlyBracket', 'closeCurlyBracket',
+		'openBoxBracket', 'closeBoxBracket',
+		'openCurveBracket', 'closeCurveBracket',
+		'plus',	'minus', 'times', 'div',
+		'bigger', 'smaller',
+		'print'
 	]
 
-	t_singleComm = r'\/\/'
+	t_singleComm = r'//.+\n'
+	t_multCommOpen = r'/\*'
+	t_multCommClose = r'\*/'
+	t_multComm = t_multCommOpen + r'(.+\n)*' + t_multCommClose
+
+	t_plus = r'\+'
+	t_minus = r'-'
+	t_times = r'\*'
+	t_div = r'/'
+	t_num = r'\ *\d+\ *'
+	t_bigger = r'>'
+	t_smaller = r'<'
+
 	t_newline = r'\n'
-	t_space = r'\ '
+	t_equals = r'\ *=\ *'
+	t_endline = r';'
 
 	t_openCurlyBracket = r'\{'
 	t_closeCurlyBracket = r'\}'
 
 	t_openCurveBracket = r'\('
 	t_closeCurveBracket = r'\)'
+	t_args = t_openCurveBracket + r'(\w+,?)+' + t_closeCurveBracket
 
 	t_openBoxBracket = r'\['
 	t_closeBoxBracket = r'\]'
 
-	t_var = r'int|float|double'  # int
-	t_declare = t_var + t_space + r'+[a-zA-Z][a-zA-z\d_]*'  # int i
-	t_assign = t_var + t_space + r'+[a-zA-Z][a-zA-z\d_]*' + r'\s*=\s*' + r'\d+'  # int i = 1
+	t_var = r'\ *[a-zA-Z]\w*\ *'
 
-	t_if = r'\s?if'
+	t_declareInt = r'int\ *' + t_var + t_endline
+	t_declareDouble = r'double\ *' + t_var + t_endline
+	t_declareFloat = r'float\ *' + t_var + t_endline
 
-	t_word = r'.+'
-	t_multCommOpen = r'/\*'
-	t_multCommClose = r'\*/'
-	t_multComm = t_multCommOpen + t_word + r'\+' + t_multCommClose
+	t_assign = t_var + t_equals + t_minus + r'?\ *(' + t_var + r'|' + t_num + r')\ *([+\-*/]?(' + t_var + r'|' + t_num + r'))*' + t_endline
 
-	t_ignore = r'^.+$'
+	t_assignInt = r'int\ *' + t_assign
+	t_assignDouble = r'double\ *' + t_assign
+	t_assignFloat = r'float\ *' + t_assign
+
+	t_callFunc = t_var + t_args
+	t_declareFunc = r'function\ *' + t_callFunc
+	t_prog = r'program\ *' + t_var
+	t_print = r'print\ *' + t_openCurveBracket + r'((' + t_callFunc + r',?)+|(' + t_var + r',?)+)+' + t_closeCurveBracket + t_endline
+
+	t_ignore = r' \n\t'
 
 	lexer = lex.lex()
 
 	if __name__ == "__main__":
 		n_teste = input("Teste numero:")
 		pwd = "teste" + n_teste + ".txt"
+		comentario = False
 		with open(pwd, 'r') as file:
 			lines = file.readlines()
 			print(len(lines))
 			for line in lines:
 				lexer.input(line)
 				for token in lexer:
-					if token.type != "newline" and token.type != "space":
-						print(token.type + " | " + token.value)
+					if token.type == "multCommOpen":
+						comentario = True
+					if token.type == "multCommClose":
+						comentario = False
+					if token.type not in ["newline", "space", "singleComm", "multCommClose"] and not comentario:
+						print(f"TIPO: {token.type:<18} | VALOR: {token.value:<10}")
